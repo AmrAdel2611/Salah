@@ -31,8 +31,9 @@
         /* Audio Control Bar */
         .audio-container {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 30%;
+            left: 50%;
+            right: auto;
             z-index: 1000;
             background: var(--card-bg);
             padding: 10px 15px;
@@ -42,6 +43,15 @@
             align-items: center;
             gap: 10px;
             border: 1px solid var(--secondary-color);
+            transform-origin: center top;
+            transform: translateX(-50%) scale(1);
+            transition: transform 700ms cubic-bezier(.22,.9,.32,1), opacity 400ms ease, left 700ms ease, right 700ms ease;
+        }
+
+        /* initial large/near-text state; centered horizontally until user interacts */
+        .audio-container.audio-initial {
+            transform: translateX(-50%) translateY(40px) scale(2.5);
+            opacity: 1;
         }
 
         .audio-btn {
@@ -57,6 +67,15 @@
 
         .audio-btn:hover {
             background: var(--accent-color);
+        }
+
+        /* Hidden content until play is clicked */
+        main {
+            display: none;
+        }
+
+        main.revealed {
+            display: block;
         }
 
         /* Hero Section */
@@ -201,20 +220,39 @@
             .wishes-text { font-size: 1.3rem; }
             .grid { grid-template-columns: 1fr; }
         }
+
+        /* Mobile-specific tweaks for the audio box */
+        @media (max-width: 500px) {
+            .audio-container {
+                padding: 8px 12px;
+                left: 50%;
+                right: auto;
+            }
+            .audio-container.audio-initial {
+                transform: translateX(-50%) translateY(18px) scale(1.4);
+            }
+            .audio-btn {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+            .audio-container span {
+                display: none; /* hide label to save space on very small screens */
+            }
+        }
     </style>
     </head>
     <body>
 
         <div class="audio-container">
             <span>🎵 Salah AbdelFatah</span>
-            <audio id="bg-music" loop autoplay>
+            <audio id="bg-music" loop>
                 <source
                     src="assets/music.mp3"
                     type="audio/mpeg">
                 Your browser does not support the audio element.
             </audio>
             <button class="audio-btn" id="music-toggle"
-                onclick="toggleMusic()">Pause</button>
+                onclick="toggleMusic()">Play</button>
         </div>
 
         <header id="celebration-header">
@@ -306,9 +344,27 @@
         function toggleMusic() {
             const music = document.getElementById('bg-music');
             const btn = document.getElementById('music-toggle');
+            const main = document.querySelector('main');
+            const audioContainer = document.querySelector('.audio-container');
+
             if (music.paused) {
                 music.play().catch(err => console.log("Audio playback configuration required: ", err));
                 btn.textContent = 'Pause';
+
+                // On first interaction, animate the audio box to its corner
+                if (audioContainer.classList.contains('audio-initial')) {
+                    // remove the initial class so CSS transition moves it to final position
+                    audioContainer.classList.remove('audio-initial');
+                }
+
+                // Reveal the page content
+                if (!main.classList.contains('revealed')) {
+                    main.classList.add('revealed');
+                    // Scroll to the moments section
+                    setTimeout(() => {
+                        main.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
             } else {
                 music.pause();
                 btn.textContent = 'Play';
@@ -339,13 +395,11 @@
         // Run decoration on load
         window.addEventListener('DOMContentLoaded', function() {
             startConfetti();
-            // Attempt to autoplay music on load
-            const music = document.getElementById('bg-music');
+            // Keep audio box large/near-text until user clicks Play
+            const audioContainer = document.querySelector('.audio-container');
             const btn = document.getElementById('music-toggle');
-            music.play().catch(err => {
-                console.log("Autoplay prevented by browser policy. User can click Play button.");
-                btn.textContent = 'Play';
-            });
+            audioContainer.classList.add('audio-initial');
+            btn.textContent = 'Play';
         });
     </script>
     </body>
