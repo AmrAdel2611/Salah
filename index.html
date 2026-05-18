@@ -29,12 +29,13 @@
         }
 
         /* Audio Control Bar */
+        /* Audio control defaults: placed under the header (absolute inside header) */
         .audio-container {
-            position: fixed;
-            bottom: 30%;
+            position: absolute; /* positioned relative to header */
+            bottom: -36px; /* sit slightly below header */
             left: 50%;
-            right: auto;
-            z-index: 1000;
+            transform: translateX(-50%) scale(1);
+            z-index: 3000; /* higher so it sits above footer/content */
             background: var(--card-bg);
             padding: 10px 15px;
             border-radius: 30px;
@@ -44,14 +45,27 @@
             gap: 10px;
             border: 1px solid var(--secondary-color);
             transform-origin: center top;
-            transform: translateX(-50%) scale(1);
-            transition: transform 700ms cubic-bezier(.22,.9,.32,1), opacity 400ms ease, left 700ms ease, right 700ms ease;
+            transition: transform 700ms cubic-bezier(.22,.9,.32,1), opacity 400ms ease, left 700ms ease, right 700ms ease, top 700ms ease;
+            bottom: -36px;
         }
 
-        /* initial large/near-text state; centered horizontally until user interacts */
+        /* initial large/near-text state; centered under header until user interacts */
         .audio-container.audio-initial {
-            transform: translateX(-50%) translateY(40px) scale(2.5);
+            transform: translateX(-50%) translateY(6px) scale(2.0);
             opacity: 1;
+            bottom: 65px;
+        }
+
+        /* final small state at top-right after user interaction */
+        .audio-container.audio-final {
+            position: fixed !important;
+            left: auto !important;
+            right: 20px !important;
+            top: 20px !important;
+            bottom: auto !important;
+            transform: translateX(0) scale(1) !important;
+            opacity: 1;
+            z-index: 3000;
         }
 
         .audio-btn {
@@ -243,19 +257,19 @@
     </head>
     <body>
 
-        <div class="audio-container">
-            <span>🎵 Salah AbdelFatah</span>
-            <audio id="bg-music" loop>
-                <source
-                    src="assets/music.mp3"
-                    type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-            <button class="audio-btn" id="music-toggle"
-                onclick="toggleMusic()">Play</button>
-        </div>
-
         <header id="celebration-header">
+            <div class="audio-container">
+                <span>🎵 Salah AbdelFatah</span>
+                <audio id="bg-music" loop>
+                    <source
+                        src="assets/music.mp3"
+                        type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <button class="audio-btn" id="music-toggle"
+                    onclick="toggleMusic()">Play</button>
+            </div>
+
             <h1 class="hero-title">Happy Birthday, Salah! 🎉</h1>
             <div class="wishes-text">
                 "Kol sana wenta tyb ya salah abdelfatah, w 3o2bal 1000034897 sana"
@@ -353,9 +367,10 @@
 
                 // On first interaction, animate the audio box to its corner
                 if (audioContainer.classList.contains('audio-initial')) {
-                    // remove the initial class so CSS transition moves it to final position
                     audioContainer.classList.remove('audio-initial');
                 }
+                // ensure final class is applied to move to top-right
+                audioContainer.classList.add('audio-final');
 
                 // Reveal the page content
                 if (!main.classList.contains('revealed')) {
@@ -368,6 +383,9 @@
             } else {
                 music.pause();
                 btn.textContent = 'Play';
+                // keep the small top-right position when paused
+                audioContainer.classList.add('audio-final');
+                audioContainer.classList.remove('audio-initial');
             }
         }
 
